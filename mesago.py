@@ -8,6 +8,8 @@ import smtplib
 import email
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+from email.MIMEBase import MIMEBase
+from email import encoders
 
 
 def get_section(lines, token):
@@ -51,15 +53,32 @@ def dictify(line):
     return dictionary
 
 
-def get_msg(to, subject, body_raw):
+def get_attachment(path):
+    attachment = open(path, "rb")
+    part = MIMEBase('application', 'octet-stream')
+    part.set_payload((attachment).read())
+    encoders.encode_base64(part)
+    part.add_header(
+            'Content-Disposition',
+            "attachment; filename= %s" % os.path.basename(path))
+    return part
+
+
+def get_msg(to, subject, body_raw, attachment_files):
     tokens = dictify(to)
+    # get message parts
     tos = tokens['email'].split(';')
     body = replace_tokens(body_raw, tokens)
+    attachments = []
+    for filename in attachment_files:
+        attachments.append(get_attachment(filename.strip()))
     # add parts of message to msg object
     msg = MIMEMultipart()
     msg['To'] = email.Utils.COMMASPACE.join(tos)
     msg['Subject'] = ''.join([line.strip() for line in subject])
     msg.attach(MIMEText(body, 'plain'))
+    for attachment in attachments:
+        msg.attach(attachment)
     return msg
 
 
@@ -75,9 +94,10 @@ def main(message_file):
     to_lines = get_section(lines, '$to')
     subject = get_section(lines, '$subject')
     body_raw = ''.join(get_section(lines, '$body'))
+    attachments = get_section(lines, '$attachments')
     password = getpass.getpass('Password: ')
     for to in to_lines:
-        msg = get_msg(to.strip(), subject, body_raw)
+        msg = get_msg(to.strip(), subject, body_raw, attachments)
         send(msg, me, password)
 
 
