@@ -1,0 +1,33 @@
+
+# The gmail account to send from
+$from
+from@gmail.com
+$from
+
+# Each line in the 'to' list must have email:address@domain.com The rest of the
+# 'to' line can have tokens (comma-delimited name value pairs e.g.
+# name:value,name:value). You can supply multiple emails in the 'email' line
+# separated by semicolons. There is a special file tag that will insert the
+# contents of the file specified in the value ([file]name:path)
+$to
+email:to1@gmail.com,name:John,fav_color:Alabaster,[file]file1:balloons.txt
+email:to2@gmail.com;to3@gmail.com,name:Bill,fav_color:Chartreuse,[file]file1:smoothie.txt
+$to
+
+# Subject should only be on a single line
+$subject
+L'Chaim - To Life
+$subject
+
+# Parameters in this message body will be replaced by the values provided in
+# the 'to' lines
+$body
+${name},
+
+After the incident with the paint my carpet is now ${color}.
+
+${file1}
+
+Thank you,
+Bill Nye
+$body
