@@ -7,11 +7,17 @@ $from
 # Each line in the 'to' list must have email:address@domain.com The rest of the
 # 'to' line can have tokens (comma-delimited name value pairs e.g.
 # name:value,name:value). You can supply multiple emails in the 'email' line
-# separated by semicolons. There is a special file tag that will insert the
-# contents of the file specified in the value ([file]name:path)
+# separated by semicolons. 
+# Special Tags: 
+#   file: will insert the contents of the file specified in the value
+#     e.g. ([file]name:path)
+#   attachment: takes a file and inserts it at the end of the message. This tag
+#     should not not get a token in the message body. e.g.
+#     ([attachment]name:path)
+#     
 $to
-email:to1@gmail.com,name:John,fav_color:Alabaster,[file]file1:balloons.txt
-email:to2@gmail.com;to3@gmail.com,name:Bill,fav_color:Chartreuse,[file]file1:smoothie.txt
+email:to1@gmail.com,name:John,fav_color:Alabaster,[file]file1:balloons.txt,[attachment]colorful:confetti.jpg
+email:to2@gmail.com;to3@gmail.com,name:Bill,fav_color:Chartreuse,[file]file1:smoothie.txt,[attachment]banana:strawberry.pdf
 $to
 
 # Subject should only be on a single line
