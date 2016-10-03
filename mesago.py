@@ -64,14 +64,15 @@ def get_attachment(path):
     return part
 
 
-def get_msg(to, subject, body_raw, attachment_files):
+def get_msg(to, subject, body_raw):
     tokens = dictify(to)
     # get message parts
     tos = tokens['email'].split(';')
     body = replace_tokens(body_raw, tokens)
+    attaches = {k: v for (k, v) in tokens.iteritems() if '[attachment]' in k}
     attachments = []
-    for filename in attachment_files:
-        attachments.append(get_attachment(filename.strip()))
+    for k, v in attaches.iteritems():
+        attachments.append(get_attachment(v.strip()))
     # add parts of message to msg object
     msg = MIMEMultipart()
     msg['To'] = email.Utils.COMMASPACE.join(tos)
@@ -94,10 +95,9 @@ def main(message_file):
     to_lines = get_section(lines, '$to')
     subject = get_section(lines, '$subject')
     body_raw = ''.join(get_section(lines, '$body'))
-    attachments = get_section(lines, '$attachments')
     password = getpass.getpass('Password: ')
     for to in to_lines:
-        msg = get_msg(to.strip(), subject, body_raw, attachments)
+        msg = get_msg(to.strip(), subject, body_raw)
         send(msg, me, password)
 
 
@@ -115,7 +115,7 @@ def send(msg, from_addr, password):
     server.quit()
 
 
-token_func_map = {'file': read_file}
+token_func_map = {'file': read_file, 'attachment': lambda x: ""}
 
 
 if __name__ == '__main__':
