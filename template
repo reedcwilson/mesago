@@ -1,7 +1,7 @@
 
 # The gmail account to send from
 $from
-reedcwilson@gmail.com
+from@gmail.com
 $from
 
 # Subject should only be on a single line

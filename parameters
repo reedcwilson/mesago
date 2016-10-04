@@ -12,7 +12,7 @@
 # tokens: The rest of the message can have tokens (comma-delimited name value
 #     pairs e.g. name:value,name:value).
 $message
-emails:reedcwilson@gmail.com
+emails:to1@gmail.com,to2@gmail.com
 name:John
 toast:To Life
 fav_color:Alabaster
@@ -21,7 +21,7 @@ fav_color:Alabaster
 $message
 
 $message
-emails:reedcwilson@gmail.com
+emails:to@gmail.com
 name:Fred
 toast:To The Pain
 fav_color:Burgundy
