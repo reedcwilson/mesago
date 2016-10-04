@@ -15,9 +15,9 @@ from email import encoders
 def get_section(lines, token):
     indices = [i for i, x in enumerate(lines) if x.strip() == token]
     if len(indices) != 2:
-        str = "Invalid file format: "
-        str += "%s list must have a single open and close tag pair" % token
-        print str
+        err = "Invalid file format: "
+        err += "%s list must have a single open and close tag pair" % token
+        print err
         sys.exit(1)
     return lines[indices[0]+1:indices[1]]
 
@@ -44,8 +44,8 @@ def replace_tokens(text, tokens):
     return new_str
 
 
-def dictify(line):
-    tags = [tag for tag in line.split(',')]
+def dictify(lines):
+    tags = [tag.strip() for tag in lines]
     dictionary = {}
     for tag in tags:
         parts = tag.split(':')
@@ -64,40 +64,76 @@ def get_attachment(path):
     return part
 
 
-def get_msg(to, subject, body_raw):
-    tokens = dictify(to)
+def get_param_groups(lines):
+    params = []
+    i = 0
+    start = -1
+    while i < len(lines):
+        l = lines[i].strip()
+        if l == '$message':
+            if start == -1:
+                start = i
+            else:
+                params.append(dictify(lines[start+1:i]))
+                start = -1
+        i += 1
+    return params
+
+
+def get_msg(params, subject_raw, body_raw):
     # get message parts
-    tos = tokens['email'].split(';')
-    body = replace_tokens(body_raw, tokens)
-    attaches = {k: v for (k, v) in tokens.iteritems() if '[attachment]' in k}
+    tos = params['emails'].split(';')
+    subject_raw = ''.join([line.strip() for line in subject_raw])
+    subject = replace_tokens(subject_raw, params)
+    body = replace_tokens(body_raw, params)
+    attaches = {k: v for (k, v) in params.iteritems() if '[attachment]' in k}
     attachments = []
     for k, v in attaches.iteritems():
         attachments.append(get_attachment(v.strip()))
     # add parts of message to msg object
     msg = MIMEMultipart()
     msg['To'] = email.Utils.COMMASPACE.join(tos)
-    msg['Subject'] = ''.join([line.strip() for line in subject])
+    msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain'))
     for attachment in attachments:
         msg.attach(attachment)
     return msg
 
 
-def main(message_file):
-    if not os.path.isfile(message_file):
-        print "the provided path is not a file"
+def get_params(filename):
+    # get parameters
+    param_lines = []
+    with open(filename, 'r') as f:
+        param_lines = f.readlines()
+    return get_param_groups(param_lines)
+
+
+def get_template(filename):
+    template_lines = []
+    with open(filename, 'r') as f:
+        return f.readlines()
+
+
+def assert_valid_file(filename):
+    if not os.path.isfile(filename):
+        print "the provided path is not a file: %s" % filename
         sys.exit(1)
-    lines = []
-    with open(message_file, 'r') as f:
-        lines = [line for line in f.readlines()]
-    # get parts of message
-    me = ''.join(get_section(lines, '$from')).strip()
-    to_lines = get_section(lines, '$to')
-    subject = get_section(lines, '$subject')
-    body_raw = ''.join(get_section(lines, '$body'))
+
+
+def main(template_filename, params_filename):
+    assert_valid_file(template_filename)
+    assert_valid_file(params_filename)
+    # get parts of template
+    template_lines = get_template(template_filename)
+    me = ''.join(get_section(template_lines, '$from')).strip()
+    subject = get_section(template_lines, '$subject')
+    body_raw = ''.join(get_section(template_lines, '$body'))
     password = getpass.getpass('Password: ')
-    for to in to_lines:
-        msg = get_msg(to.strip(), subject, body_raw)
+    # get param groups
+    param_groups = get_params(params_filename)
+    # send of all of the messages
+    for params in param_groups:
+        msg = get_msg(params, subject, body_raw)
         send(msg, me, password)
 
 
@@ -119,7 +155,7 @@ token_func_map = {'file': read_file, 'attachment': lambda x: ""}
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print "You must provide a message file"
+    if len(sys.argv) < 3:
+        print "You must provide a template file and a params file"
         sys.exit(1)
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])

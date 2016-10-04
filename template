@@ -1,0 +1,23 @@
+
+# The gmail account to send from
+$from
+reedcwilson@gmail.com
+$from
+
+# Subject should only be on a single line
+$subject
+L'Chaim - ${toast}
+$subject
+
+# Parameters in this message body will be replaced by the values provided in
+# the parameters file
+$body
+${name},
+
+After the incident with the paint my carpet is now ${fav_color}.
+
+${file1}
+
+Thank you,
+Bill Nye
+$body

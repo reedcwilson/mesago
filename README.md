@@ -6,9 +6,10 @@ template and replace tokens with personal values.
 
 ## Usage
 
-Create a message file (modeled after the file in this repo)
+Create a template file and a parameters file (modeled after the template and
+parameters files in this repo).
 
 ```
-> python mesago.py message-file
+> python mesago.py template-file parameters-file
 Password: 
 ```

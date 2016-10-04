@@ -1,0 +1,30 @@
+
+# The params file can contain multiple $message sections which contain all of
+# the necessary parameters for an associated template
+#
+# emails: A required parameter. It can contain multiple semicolon-delimited
+#     email addresses
+# file: Special tag that will insert the contents of the file specified in the
+#     value e.g. ([file]name:filepath)
+# attachment: Special tag that takes a file and attaches it at the end of the
+#     message. This tag should not not get a token in the template body. e.g.
+#     ([attachment]name:filepath)
+# tokens: The rest of the message can have tokens (comma-delimited name value
+#     pairs e.g. name:value,name:value).
+$message
+emails:reedcwilson@gmail.com
+name:John
+toast:To Life
+fav_color:Alabaster
+[file]file1:balloons.txt
+[attachment]colorful:confetti.png
+$message
+
+$message
+emails:reedcwilson@gmail.com
+name:Fred
+toast:To The Pain
+fav_color:Burgundy
+[file]file1:balloons.txt
+[attachment]colorful:confetti.png
+$message
