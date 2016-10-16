@@ -6,6 +6,7 @@ import re
 import getpass
 import smtplib
 import email
+import getopt
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 from email.MIMEBase import MIMEBase
@@ -120,7 +121,34 @@ def assert_valid_file(filename):
         sys.exit(1)
 
 
-def main(template_filename, params_filename):
+def print_usage(exit):
+    print 'mesago.py [-m (print message only)] -t <templatefile> -p <paramsfile>'
+    sys.exit(2)
+
+def get_args(argv):
+    inputfile, outputfile = (None,)*2
+    messageonly = False
+    try:
+        opts, remainder = getopt.getopt(argv[1:],"hmt:p:")
+    except getopt.GetoptError:
+        print_usage(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print_usage(0)
+        elif opt in ("-t"):
+            inputfile = arg
+        elif opt in ("-p"):
+            outputfile = arg
+        elif opt in ("-m"):
+            messageonly = True
+    return inputfile, outputfile, messageonly
+
+
+def print_message(msg):
+    print '%s##########' % msg
+
+
+def main(template_filename, params_filename, message_only):
     assert_valid_file(template_filename)
     assert_valid_file(params_filename)
     # get parts of template
@@ -128,13 +156,17 @@ def main(template_filename, params_filename):
     me = ''.join(get_section(template_lines, '$from')).strip()
     subject = get_section(template_lines, '$subject')
     body_raw = ''.join(get_section(template_lines, '$body'))
-    password = getpass.getpass('Password: ')
+    if not message_only:
+        password = getpass.getpass('Password: ')
     # get param groups
     param_groups = get_params(params_filename)
-    # send of all of the messages
+    # send off all of the messages
     for params in param_groups:
         msg = get_msg(params, subject, body_raw)
-        send(msg, me, password)
+        if not message_only:
+            send(msg, me, password)
+        else:
+            print_message(replace_tokens(body_raw, params))
 
 
 def send(msg, from_addr, password):
@@ -158,4 +190,5 @@ if __name__ == '__main__':
     if len(sys.argv) < 3:
         print "You must provide a template file and a params file"
         sys.exit(1)
-    main(sys.argv[1], sys.argv[2])
+    templatefile, paramsfile, messageonly = get_args(sys.argv)
+    main(templatefile, paramsfile, messageonly)
