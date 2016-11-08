@@ -110,7 +110,6 @@ def get_params(filename):
 
 
 def get_template(filename):
-    template_lines = []
     with open(filename, 'r') as f:
         return f.readlines()
 
@@ -122,14 +121,19 @@ def assert_valid_file(filename):
 
 
 def print_usage(exit):
-    print 'mesago.py [-m (print message only)] -t <templatefile> -p <paramsfile>'
+    print ("mesago.py "
+           "[-m (print message only)] "
+           "-t <templatefile> "
+           "-p <paramsfile>"
+           )
     sys.exit(2)
+
 
 def get_args(argv):
     inputfile, outputfile = (None,)*2
     messageonly = False
     try:
-        opts, remainder = getopt.getopt(argv[1:],"hmt:p:")
+        opts, remainder = getopt.getopt(argv[1:], "hmt:p:")
     except getopt.GetoptError:
         print_usage(2)
     for opt, arg in opts:
@@ -188,7 +192,6 @@ token_func_map = {'file': read_file, 'attachment': lambda x: ""}
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print "You must provide a template file and a params file"
-        sys.exit(1)
+        print_usage(-1)
     templatefile, paramsfile, messageonly = get_args(sys.argv)
     main(templatefile, paramsfile, messageonly)
