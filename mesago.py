@@ -147,6 +147,8 @@ def get_args(argv):
             messageonly = True
         elif opt in ("-f"):
             real = True
+        if not real:
+            print "Sending to sender because the -f flag wasn't included"
     return inputfile, outputfile, messageonly, real
 
 
