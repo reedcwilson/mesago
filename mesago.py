@@ -81,9 +81,8 @@ def get_param_groups(lines):
     return params
 
 
-def get_msg(params, subject_raw, body_raw):
+def get_msg(params, subject_raw, body_raw, tos):
     # get message parts
-    tos = params['emails'].split(';')
     subject_raw = ''.join([line.strip() for line in subject_raw])
     subject = replace_tokens(subject_raw, params)
     body = replace_tokens(body_raw, params)
@@ -132,8 +131,9 @@ def print_usage(exit):
 def get_args(argv):
     inputfile, outputfile = (None,)*2
     messageonly = False
+    real = False
     try:
-        opts, remainder = getopt.getopt(argv[1:], "hmt:p:")
+        opts, remainder = getopt.getopt(argv[1:], "hmft:p:")
     except getopt.GetoptError:
         print_usage(2)
     for opt, arg in opts:
@@ -145,14 +145,16 @@ def get_args(argv):
             outputfile = arg
         elif opt in ("-m"):
             messageonly = True
-    return inputfile, outputfile, messageonly
+        elif opt in ("-f"):
+            real = True
+    return inputfile, outputfile, messageonly, real
 
 
 def print_message(msg):
     print '%s##########' % msg
 
 
-def main(template_filename, params_filename, message_only):
+def main(template_filename, params_filename, message_only, real):
     assert_valid_file(template_filename)
     assert_valid_file(params_filename)
     # get parts of template
@@ -166,7 +168,10 @@ def main(template_filename, params_filename, message_only):
     param_groups = get_params(params_filename)
     # send off all of the messages
     for params in param_groups:
-        msg = get_msg(params, subject, body_raw)
+        to = [me]
+        if real:
+            to = params['emails'].split(':')
+        msg = get_msg(params, subject, body_raw, to)
         if not message_only:
             send(msg, me, password)
         else:
@@ -193,5 +198,5 @@ token_func_map = {'file': read_file, 'attachment': lambda x: ""}
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         print_usage(-1)
-    templatefile, paramsfile, messageonly = get_args(sys.argv)
-    main(templatefile, paramsfile, messageonly)
+    templatefile, paramsfile, messageonly, real = get_args(sys.argv)
+    main(templatefile, paramsfile, messageonly, real)
