@@ -123,6 +123,7 @@ def print_usage(exit):
     print ("mesago.py "
            "[-m (print message only)] "
            "-t <templatefile> "
+           "-f (sends the message to the senders)"
            "-p <paramsfile>"
            )
     sys.exit(2)
